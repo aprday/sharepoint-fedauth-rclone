@@ -113,3 +113,9 @@ Telegram 推送新密码 → 同次运行继续取 Cookie，全程零人工。
 - 刷新成功写 `SP_HEARTBEAT_FILE`，由机器人 watchdog 观测（覆盖"cron/机器静默死亡"盲区）
 - 失败时推送登录页截图（sendPhoto），链路抖动还是页面改版一眼可辨
 - 首败静默（`SP_NOTIFY_FAILURE=0`）+ 5 分钟后 retry，仅二次失败才报警
+
+## 多账号管理（v2 机器人）
+一个 TG 机器人面板管 N 个账号：每账号一份 `/etc/sp-webdav/accounts/<名字>.env`（字段同 `config/example.env`），
+命令带账号参数（`/status fudan`、`/refresh emory`…），watchdog/日报/改密自愈按账号独立。
+systemd 模板单元：`sp-cookie-refresh@<名字>.timer`、`rclone-sp@<名字>.service`。
+完整步骤见 `docs/multi-account.md`。

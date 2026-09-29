@@ -1,0 +1,27 @@
+[Unit]
+Description=Rclone mount for SharePoint account %i (WebDAV FedAuth cookie + chunker overlay)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+EnvironmentFile=/etc/sp-webdav/accounts/%i.env
+ExecStartPre=/bin/mkdir -p ${SP_MOUNT_POINT}
+ExecStartPre=-/bin/fusermount -uz ${SP_MOUNT_POINT}
+# SP_CHUNKER_REMOTE 为该账号的 chunker overlay remote（如 spchunked-fudan）
+ExecStart=/usr/local/bin/rclone-sp-wrapper.sh mount ${SP_CHUNKER_REMOTE}: ${SP_MOUNT_POINT} \
+  --allow-other --allow-non-empty \
+  --dir-cache-time 72h --poll-interval 10m \
+  --vfs-cache-mode full --vfs-cache-max-age 48h --vfs-cache-max-size 5G \
+  --vfs-read-chunk-size 128M --vfs-read-chunk-size-limit 1G \
+  --buffer-size 128M --umask 000 \
+  --log-level INFO --log-file /var/log/rclone-${SP_RCLONE_REMOTE}.log
+ExecStop=/bin/fusermount -uz ${SP_MOUNT_POINT}
+Restart=always
+RestartSec=30
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

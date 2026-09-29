@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh SharePoint FedAuth cookies (%i)
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/sp-webdav/accounts/%i.env
+Environment=SP_NOTIFY_FAILURE=0
+ExecStart=/usr/bin/env node /opt/sp-webdav/scripts/sp-cookie-refresh.js
+OnFailure=sp-cookie-refresh-retry@%i.service

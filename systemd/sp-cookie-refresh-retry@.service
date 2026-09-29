@@ -1,0 +1,9 @@
+[Unit]
+Description=Retry SharePoint cookie refresh 5 minutes after a failure (%i, this run notifies Telegram)
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/sp-webdav/accounts/%i.env
+ExecStartPre=/bin/sleep 300
+ExecStart=/usr/bin/env node /opt/sp-webdav/scripts/sp-cookie-refresh.js
