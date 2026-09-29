@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh SharePoint FedAuth cookies every 12 hours
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=12h
+RandomizedDelaySec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
