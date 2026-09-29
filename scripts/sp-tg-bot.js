@@ -119,7 +119,8 @@ function profPaths(cfg) {
 
 function statusFor(cfg) {
   const p = profPaths(cfg);
-  const cookieAge = hoursSince(p.cookie);
+  let cookieAge = null;
+  try { cookieAge = (Date.now() - fs.statSync(p.cookie).mtimeMs) / 3600000; } catch (e) {}
   const hbAge = hoursSince(p.hb);
   const startDate = cfg.SP_PASSWORD_START_DATE || '未知';
   let days = '?';
