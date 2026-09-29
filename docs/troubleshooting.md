@@ -55,3 +55,18 @@
 
 - 每个账号必须独立：`SP_COOKIE_FILE`、rclone remote 名、systemd 服务实例、挂载点；
 - 复制 service 文件改名（如 `rclone-sp-b.service`）并在其 `EnvironmentFile` 指向各自的 env 文件。
+
+
+## 11. 自动改密（rotation）相关
+- `Password rotation rejected by tenant policy`：新密码不满足复杂度或与近期密码重复；看截图目录 `sp_rotate_rejected.png` 的拒绝原因，调整 `generatePassword()` 字符集；
+- `Password-change page without 3 fields`：改密页改版；看 `sp_rotate_unexpected.png`，更新 `handleForcedPasswordChange()` 选择器；
+- 改密成功后旧密码立即失效，手动登录 Web 请用 Telegram 推送的新密码或机器人 `/getpw`。
+
+## 12. 机器人（sp-tg-bot）相关
+- 命令无回应：`systemctl status sp-tg-bot` 与 `journalctl -u sp-tg-bot -n 20`；确认发消息的 chat id 在 `TG_CHAT_ID` / `TG_ALLOWED_CHATS` 白名单内；
+- 机器人与 cron 通知互不冲突：机器人只消费 getUpdates，通知走 sendMessage 通道。
+
+## 13. 部署坑（实战教训）
+- 经 heredoc/远程管道写出的配置文件要除 CRLF（`sed -i 's/\r$//'`），否则 env 值带 `\r` 引发离奇故障（systemd 单元名、node argv 都会中招）；
+- `. /etc/default/xxx` 只设置 shell 变量，传给子进程前必须 `set -a` … `set +a`；
+- timer 加 `Persistent=true` 后 enable 时会立刻补跑一次过期任务，属预期行为。

@@ -1,0 +1,14 @@
+[Unit]
+Description=Telegram ops bot for SharePoint WebDAV (status/refresh/getpw/logs + heartbeat watchdog + daily digest)
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/default/sp-webdav
+ExecStart=/usr/local/bin/sp-tg-bot.js
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

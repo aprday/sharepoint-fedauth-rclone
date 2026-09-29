@@ -88,3 +88,28 @@ docs/troubleshooting.md          常见故障速查（含真实踩坑记录）
 1. 一个能持续保鲜的 `FedAuth/rtFa` Cookie（直接拷 `scripts/sp-cookie-refresh.js`）；
 2. 一个带 Cookie 头的 WebDAV 客户端（rclone 任意 remote 类型皆可复用）；
 3. 大于 2GB 的文件走 chunker 或自行分片（见 `docs/troubleshooting.md`）。
+
+
+## v4 运维增强（2026-09-29）
+
+### Telegram 机器人面板（scripts/sp-tg-bot.js）
+白名单聊天内命令：
+- `/status` Cookie 年龄 / 心跳 / 密码周期 / 挂载空间 / 服务状态
+- `/refresh` 立即触发一次 Cookie 刷新并回报结果
+- `/getpw` 取当前密码（自动改密后用它拿新密码）
+- `/logs [n]` 最近刷新日志
+- `/help` 命令列表
+
+内置 watchdog：心跳文件超过 `SP_HEARTBEAT_MAX_HOURS`（默认 26h）未更新即报警（12h 内去重）；
+每天 09:05 发状态日报（`SP_DAILY_DIGEST=0` 可关）。
+
+### 密码到期自愈
+刷新脚本检测到租户"强制改密页"时自动：生成随机 16 位新密码 → 完成改密 →
+原子更新 env 文件的 `SP_PASSWORD` / `SP_PASSWORD_START_DATE` → 记入历史（保留最近 8 个）→
+Telegram 推送新密码 → 同次运行继续取 Cookie，全程零人工。
+强制改密页结构已在真实教育版租户验证（3 个密码框 + `#idSIButton9`）。
+
+### 心跳与通知降噪
+- 刷新成功写 `SP_HEARTBEAT_FILE`，由机器人 watchdog 观测（覆盖"cron/机器静默死亡"盲区）
+- 失败时推送登录页截图（sendPhoto），链路抖动还是页面改版一眼可辨
+- 首败静默（`SP_NOTIFY_FAILURE=0`）+ 5 分钟后 retry，仅二次失败才报警
